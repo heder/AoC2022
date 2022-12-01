@@ -2,28 +2,27 @@
 {
     static void Main()
     {
-        int[] lines = File.ReadLines("in.txt").Select(f => Convert.ToInt32(f)).ToArray();
-        
-        List<int> groups = new();
-        int currentPos = 0;
-        
-        while (currentPos < lines.Length - 2)
+        var lines = File.ReadLines("in.txt").ToArray();
+        List<int> groups = new List<int>();
+
+        int curr = 0;
+        for (int i = 0; i < lines.Length; i++)
         {
-            groups.Add(lines[currentPos] + lines[currentPos + 1] + lines[currentPos + 2]);
-            currentPos++;
+            if (lines[i] == "")
+            {
+                groups.Add(curr);
+                curr = 0;
+                continue;
+            }
+
+            curr += Convert.ToInt32(lines[i]);
         }
 
-        int? prev = null;
-        int noIncreased = 0;
-        var groupsArray = groups.ToArray();
+        groups.Add(curr);
 
-        for (int i = 0; i < groupsArray.Length; i++)
-        {
-            if (groupsArray[i] > prev) noIncreased++;
-            prev = groupsArray[i];
-        }
+        var x = groups.OrderByDescending(f => f).Take(3).Sum();
 
-        Console.WriteLine(noIncreased);
+        Console.WriteLine(x);
         Console.ReadKey();
     }
 }
