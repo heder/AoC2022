@@ -10,11 +10,7 @@
         {
             if (lines[i] == "")
             {
-                if (curr > highest)
-                {
-                    highest = curr;
-                }
-
+                highest = Math.Max(curr, highest);
                 curr = 0;
                 continue;
             }
@@ -22,10 +18,7 @@
             curr += Convert.ToInt32(lines[i]);
         }
 
-        if (curr > highest)
-        {
-            highest = curr;
-        }
+        highest = Math.Max(curr, highest);
 
         Console.WriteLine(highest);
         Console.ReadKey();
