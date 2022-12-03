@@ -1,47 +1,41 @@
-﻿using System;
-
+﻿
 class Program
 {
+    static readonly Dictionary<char, int> priorities = new();
+
     static void Main()
     {
-        string[] numbers = File.ReadLines("in.txt").ToArray();
-
-        var bits = numbers[0].Length;
-
-        string[] oxygen = new string[numbers.Length];
-        string[] co2 = new string[numbers.Length];
-        numbers.CopyTo(oxygen, 0);
-        numbers.CopyTo(co2, 0);
-
-        // oxygen
-        for (int i = 0; i < bits; i++)
+        int i = 1;
+        for (char letter = 'a'; letter <= 'z'; letter++)
         {
-            int no1 = oxygen.Select(f => f[i]).Count(f => f == '1');
-            int no0 = oxygen.Select(f => f[i]).Count(f => f == '0');
-            char mostCommon = (no1 >= no0) ? '1' : '0';
-
-            oxygen = oxygen.Where(f => f[i] == mostCommon).ToArray();
-
-            if (oxygen.Length == 1) break;
+            priorities.Add(letter, i);
+            i++;
+        }
+        for (char letter = 'A'; letter <= 'Z'; letter++)
+        {
+            priorities.Add(letter, i);
+            i++;
         }
 
-        // co2
-        for (int i = 0; i < bits; i++)
+        var prios = new List<int>();
+        var lines = File.ReadLines("in.txt").ToArray();
+
+        i = 0;
+        while (i < lines.Length)
         {
-            int no1 = co2.Select(f => f[i]).Count(f => f == '1');
-            int no0 = co2.Select(f => f[i]).Count(f => f == '0');
-            char leastCommon = (no1 < no0) ? '1' : '0';
+            string a = lines[i];
+            string b = lines[i + 1];
+            string c = lines[i + 2];
 
-            co2 = co2.Where(f => f[i] == leastCommon).ToArray();
+            var prio = a.Intersect(b.Intersect(c));
+            prios.Add(Program.priorities[prio.Single()]);
 
-            if (co2.Length == 1) break;
+            i += 3;
         }
 
-        int o = Convert.ToInt32(new string(oxygen.First()), 2);
-        int c = Convert.ToInt32(new string(co2.First()), 2);
+        var x = prios.Sum();
 
-        Console.WriteLine(o * c);
+        Console.WriteLine(x);
         Console.ReadKey();
     }
 }
-

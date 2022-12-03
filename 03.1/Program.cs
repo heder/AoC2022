@@ -1,27 +1,46 @@
 ﻿class Program
 {
+    static readonly Dictionary<char, int> priorities = new();
+
     static void Main()
     {
-        string[] numbers = File.ReadLines("in.txt").ToArray();
-
-        var bits = numbers[0].Length;
-        char[] gamma = new char[bits];
-        char[] epsilon = new char[bits];
-
-        for (int i = 0; i < bits; i++)
+        int i = 1;
+        for (char letter = 'a'; letter <= 'z'; letter++)
         {
-            int no1 = numbers.Select(f => f[i]).Count(f => f == '1');
-            int no0 = numbers.Select(f => f[i]).Count(f => f == '0');
-
-            gamma[i] += (no1 > no0) ? '1' : '0';
-            epsilon[i] += (no1 < no0) ? '1' : '0';
+            priorities.Add(letter, i);
+            i++;
+        }
+        for (char letter = 'A'; letter <= 'Z'; letter++)
+        {
+            priorities.Add(letter, i);
+            i++;
         }
 
-        int g = Convert.ToInt32(new string(gamma), 2);
-        int e = Convert.ToInt32(new string(epsilon), 2);
+        var lines = File.ReadLines("in.txt").ToArray();
 
-        Console.WriteLine(g * e);
+        var rucksacks = new List<Rucksack>();
+        foreach (var item in lines)
+        {
+            rucksacks.Add(new Rucksack(item));
+        }
+
+        var x = rucksacks.Sum(f => f.Prio);
+
+        Console.WriteLine(x);
         Console.ReadKey();
     }
-}
 
+    class Rucksack
+    {
+        public Rucksack(string content)
+        {
+            string a = content[..(content.Length / 2)];
+            string b = content[(content.Length / 2)..];
+
+            var common = a.Intersect(b);
+            Prio = Program.priorities[common.Single()];
+        }
+
+        public int Prio { get; set; }
+    }
+}
