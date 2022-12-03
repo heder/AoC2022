@@ -17,9 +17,7 @@
             rounds.Add(round);
         }
 
-
         int s = rounds.Sum(f => f.Score());
-
 
         Console.WriteLine(s);
         Console.ReadKey();

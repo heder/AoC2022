@@ -22,7 +22,6 @@
         Console.ReadKey();
     }
 
-
     enum Hand
     {
         Rock = 1,
