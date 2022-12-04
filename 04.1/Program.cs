@@ -1,46 +1,40 @@
 ﻿class Program
 {
-    static readonly Dictionary<char, int> priorities = new();
-
     static void Main()
     {
-        int i = 1;
-        for (char letter = 'a'; letter <= 'z'; letter++)
-        {
-            priorities.Add(letter, i);
-            i++;
-        }
-        for (char letter = 'A'; letter <= 'Z'; letter++)
-        {
-            priorities.Add(letter, i);
-            i++;
-        }
+        var lines = File.ReadLines("in.txt");
+        int count = 0;
 
-        var lines = File.ReadLines("in.txt").ToArray();
-
-        var rucksacks = new List<Rucksack>();
         foreach (var item in lines)
         {
-            rucksacks.Add(new Rucksack(item));
+            var s = item.Split('-', ',');
+            var a = new MyRange(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]));
+            var b = new MyRange(Convert.ToInt32(s[2]), Convert.ToInt32(s[3]));
+            var c = new MyRange(Math.Min(a.Start, b.Start), Math.Max(a.End, b.End));
+
+            if (c.Length() == a.Length() || c.Length() == b.Length())
+            {
+                count++;
+            }
         }
 
-        var x = rucksacks.Sum(f => f.Prio);
-
-        Console.WriteLine(x);
+        Console.WriteLine(count);
         Console.ReadKey();
     }
 
-    class Rucksack
+    public class MyRange
     {
-        public Rucksack(string content)
+        public MyRange(int s, int e)
         {
-            string a = content[..(content.Length / 2)];
-            string b = content[(content.Length / 2)..];
-
-            var common = a.Intersect(b);
-            Prio = Program.priorities[common.Single()];
+            Start = s; End = e;
         }
 
-        public int Prio { get; set; }
+        public int Start { get; set; }
+        public int End { get; set; }
+
+        public int Length() 
+        {
+            return End - Start;
+        }
     }
 }

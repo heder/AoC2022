@@ -1,41 +1,42 @@
-﻿
-class Program
+﻿class Program
 {
-    static readonly Dictionary<char, int> priorities = new();
-
     static void Main()
     {
-        int i = 1;
-        for (char letter = 'a'; letter <= 'z'; letter++)
+        var lines = File.ReadLines("in.txt");
+        int count = 0;
+
+        foreach (var item in lines)
         {
-            priorities.Add(letter, i);
-            i++;
-        }
-        for (char letter = 'A'; letter <= 'Z'; letter++)
-        {
-            priorities.Add(letter, i);
-            i++;
-        }
+            var s = item.Split('-', ',');
+            var a = new MyRange(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]));
+            var b = new MyRange(Convert.ToInt32(s[2]), Convert.ToInt32(s[3]));
+            var c = new MyRange(Math.Min(a.Start, b.Start), Math.Max(a.End, b.End));
 
-        var prios = new List<int>();
-        var lines = File.ReadLines("in.txt").ToArray();
-
-        i = 0;
-        while (i < lines.Length)
-        {
-            string a = lines[i];
-            string b = lines[i + 1];
-            string c = lines[i + 2];
-
-            var prio = a.Intersect(b.Intersect(c));
-            prios.Add(Program.priorities[prio.Single()]);
-
-            i += 3;
+            if (c.Length() <= a.Length() + b.Length())
+            {
+                count++;
+            }
         }
 
-        var x = prios.Sum();
-
-        Console.WriteLine(x);
+        Console.WriteLine(count);
         Console.ReadKey();
     }
+
+
+    public class MyRange
+    {
+        public MyRange(int s, int e)
+        {
+            Start = s; End = e;
+        }
+
+        public int Start { get; set; }
+        public int End { get; set; }
+
+        public int Length()
+        {
+            return End - Start;
+        }
+    }
 }
+
