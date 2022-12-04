@@ -22,7 +22,6 @@
         Console.ReadKey();
     }
 
-
     public class MyRange
     {
         public MyRange(int s, int e)
@@ -39,4 +38,3 @@
         }
     }
 }
-
