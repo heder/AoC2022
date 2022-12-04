@@ -17,7 +17,7 @@
                 count++;
             }
         }
-
+          
         Console.WriteLine(count);
         Console.ReadKey();
     }
