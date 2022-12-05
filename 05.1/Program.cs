@@ -11,7 +11,7 @@
             if (lines[i].Trim().StartsWith('1'))
             {
                 stackrow = i;
-                stackCount = lines[i].Trim().Split("  ").Select(i => int.Parse(i)).Max();
+                stackCount = lines[i].Trim().Split("  ").Select(int.Parse).Max();
             }
         }
 

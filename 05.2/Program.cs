@@ -11,11 +11,11 @@
             if (lines[i].Trim().StartsWith('1'))
             {
                 stackrow = i;
-                stackCount = lines[i].Trim().Split("  ").Select(i => int.Parse(i)).Max();
+                stackCount = lines[i].Trim().Split("  ").Select(int.Parse).Max();
             }
         }
 
-        Stack<char>[] stacks = new Stack<char>[stackCount];
+        var stacks = new Stack<char>[stackCount];
         for (int i = 0; i < stacks.Length; i++)
         {
             stacks[i] = new Stack<char>();
