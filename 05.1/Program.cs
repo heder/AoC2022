@@ -2,39 +2,66 @@
 {
     static void Main()
     {
-        var lines = File.ReadLines("in.txt");
-        int count = 0;
+        var lines = File.ReadLines("in.txt").ToArray();
 
-        foreach (var item in lines)
+        int stackrow = -1;
+        int stackCount = -1;
+        for (int i = 0; i < lines.Length; i++)
         {
-            var s = item.Split('-', ',');
-            var a = new MyRange(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]));
-            var b = new MyRange(Convert.ToInt32(s[2]), Convert.ToInt32(s[3]));
-            var c = new MyRange(Math.Min(a.Start, b.Start), Math.Max(a.End, b.End));
-
-            if (c.Length() <= a.Length() + b.Length())
+            if (lines[i].Trim().StartsWith('1'))
             {
-                count++;
+                stackrow = i;
+                stackCount = lines[i].Trim().Split("  ").Select(i => int.Parse(i)).Max();
             }
         }
 
-        Console.WriteLine(count);
+        Stack<char>[] stacks = new Stack<char>[stackCount];
+        for (int i = 0; i < stacks.Length; i++)
+        {
+            stacks[i] = new Stack<char>();
+        }
+
+        for (int i = stackrow - 1; i >= 0; i--)
+        {
+            // Parse and fill stacks
+            //var row = lines[i].Replace("[", "").Replace("]", "");
+            var row = lines[i];
+
+            int stackOrdinal = 0;
+            for (int j = 1; j < lines[stackrow].Length; j += 4)
+            {
+                if (row[j] != ' ')
+                {
+                    stacks[stackOrdinal].Push(row[j]);
+                }
+
+                stackOrdinal++;
+            }
+        }
+
+        for (int i = stackrow + 2; i < lines.Length; i++)
+        {
+            // Move
+            var a = lines[i].Substring(5).Split("from");
+            int c = int.Parse(a[0]);
+
+            var b = a[1].Split("to");
+            var from = int.Parse(b[0]) - 1;
+            var to = int.Parse(b[1]) - 1;
+
+            for (int j = 0; j < c; j++)
+            {
+                stacks[to].Push(stacks[from].Pop());
+            }
+        }
+
+        string result = "";
+        for (int i = 0; i < stacks.Length; i++)
+        {
+            result += stacks[i].Peek();
+        }
+
+        Console.WriteLine(result);
         Console.ReadKey();
-    }
-
-    public class MyRange
-    {
-        public MyRange(int s, int e)
-        {
-            Start = s; End = e;
-        }
-
-        public int Start { get; set; }
-        public int End { get; set; }
-
-        public int Length()
-        {
-            return End - Start;
-        }
     }
 }
