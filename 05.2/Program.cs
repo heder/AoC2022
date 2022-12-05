@@ -15,7 +15,7 @@
             }
         }
 
-        var stacks = new Stack<char>[stackCount];
+        Stack<char>[] stacks = new Stack<char>[stackCount];
         for (int i = 0; i < stacks.Length; i++)
         {
             stacks[i] = new Stack<char>();
