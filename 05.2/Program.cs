@@ -39,14 +39,14 @@
 
         for (int i = stackrow + 2; i < lines.Length; i++)
         {
-            var a = lines[i].Substring(5).Split("from");
+            var a = lines[i][5..].Split("from");
             int c = int.Parse(a[0]);
 
             var b = a[1].Split("to");
             var from = int.Parse(b[0]) - 1;
             var to = int.Parse(b[1]) - 1;
 
-            List<char> list = new List<char>();
+            var list = new List<char>();
             for (int j = 0; j < c; j++)
             {
                 list.Add(stacks[from].Pop());

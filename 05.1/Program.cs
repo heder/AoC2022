@@ -24,7 +24,6 @@
         for (int i = stackrow - 1; i >= 0; i--)
         {
             // Parse and fill stacks
-            //var row = lines[i].Replace("[", "").Replace("]", "");
             var row = lines[i];
 
             int stackOrdinal = 0;
@@ -42,7 +41,7 @@
         for (int i = stackrow + 2; i < lines.Length; i++)
         {
             // Move
-            var a = lines[i].Substring(5).Split("from");
+            var a = lines[i][5..].Split("from");
             int c = int.Parse(a[0]);
 
             var b = a[1].Split("to");
