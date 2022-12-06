@@ -10,7 +10,6 @@
             {
                 Console.WriteLine(i + 4);
                 Console.ReadKey();
-                break;
             }
         }
     }
