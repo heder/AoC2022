@@ -1,100 +1,140 @@
 ﻿class Program
 {
-    static int yLen;
-    static int xLen;
+    static int yMax;
+    static int xMax;
     static Cell[,] world;
 
     static void Main()
     {
         string[] lines = File.ReadAllLines("in.txt").ToArray();
 
-        yLen = lines.Length;
-        xLen = lines[0].Length;
+        yMax = lines.Length;
+        xMax = lines[0].Length;
 
-        world = new Cell[xLen, yLen];
-        //int noVisible = (lines.Length * 2) + ((lines[0].Length - 2) * 2);
+        world = new Cell[xMax, yMax];
 
-        for (int y = 0; y < yLen; y++)
+        for (int y = 0; y < yMax; y++)
         {
-            for (int x = 0; x < xLen; x++)
+            for (int x = 0; x < xMax; x++)
             {
-                world[x, y] = new Cell(lines[y][x]);  //Convert.ToInt32(lines[y][x].ToString());
+                world[x, y] = new Cell(lines[y][x], x, y);
             }
         }
 
+        var start = world.Cast<Cell>().Where(f => f.Height == 'S').Single();
+        start.Distance = 0;
 
+        TraverseWorld(start);
 
+        var e = world.Cast<Cell>().Where(f => f.Height == 'E').Single();
 
-        //for (int y = 1; y < yLen - 1; y++)
-        //{
-        //    for (int x = 1; x < xLen - 1; x++)
-        //    {
-        //        noVisible += IsVisible(x, y);
-        //    }
-        //}
-
-        Console.WriteLine(noVisible);
+        Console.WriteLine(e.Distance);
         Console.ReadKey();
     }
 
+    private static void TraverseWorld(Cell c)
+    {
+        //DumpWorld(0, xMax, 0, yMax);
+
+        if (c.Height == 'E')
+        {
+            return;
+        }
+
+        var paths = GetPaths(c);
+        foreach (var item in paths)
+        {
+            item.Distance = c.Distance + 1;
+            TraverseWorld(item); 
+        }
+
+        return;
+    }
+
+    internal static List<Cell> GetPaths(Cell c)
+    {
+        var positions = new List<Cell>();
+
+        if (c.Y > 0)
+        {
+            var u = world[c.X, c.Y - 1];
+
+            if (CheckDistanceAndHeight(c, u))
+            {
+                positions.Add(u);
+            }
+        }
+
+        if (c.Y < yMax - 1)
+        {
+            var d = world[c.X, c.Y + 1];
+
+            if (CheckDistanceAndHeight(c, d))
+            {
+                positions.Add(d);
+            }
+        }
+
+        if (c.X > 0)
+        {
+            var l = world[c.X - 1, c.Y];
+
+            if (CheckDistanceAndHeight(c, l))
+            {
+                positions.Add(l);
+            }
+        }
+
+        if (c.X < xMax - 1)
+        {
+            var r = world[c.X + 1, c.Y];
+
+            if (CheckDistanceAndHeight(c, r))
+            {
+                positions.Add(r);
+            }
+        }
+
+        return positions;
+    }
+
+    private static bool CheckDistanceAndHeight(Cell c, Cell d)
+    {
+        return c.Distance + 1 < d.Distance && 
+            ((d.Height <= c.Height + 1 && d.Height != 'E') || 
+            (c.Height == 'z' && d.Height == 'E') || 
+            (c.Height == 'S' && d.Height == 'a'));
+    }
 
     internal class Cell
     {
-        public Cell(char height)
+        public Cell(char height, int x, int y)
         {
             Height = height;
-            Distance = 0;
+            Distance = int.MaxValue;
+            X = x;
+            Y = y;
         }
+
+        public int X;
+        public int Y;
 
         public char Height;
         public int Distance;
     }
 
 
-
-    private static int IsVisible(int xin, int yin)
+    internal static void DumpWorld(int xmin, int xmax, int ymin, int ymax)
     {
-        int treeHeight = world[xin, yin];
-
-        var uVec = new List<int>();
-        var dVec = new List<int>();
-        var lVec = new List<int>();
-        var rVec = new List<int>();
-
-        // (Y-) (up)
-        for (int y = yin - 1; y >= 0; y--)
+        for (int y = ymin; y < ymax; y++)
         {
-            uVec.Add(world[xin, y]);
-        }
+            for (int x = xmin; x < xmax; x++)
+            {
+                Console.Write(world[x, y].Distance + " | ");
+            }
 
-        // Y+ (down)
-        for (int y = yin + 1; y < yLen; y++)
-        {
-            dVec.Add(world[xin, y]);
+            Console.Write(Environment.NewLine);
         }
-
-        // X- (left)
-        for (int x = xin - 1; x >= 0; x--)
-        {
-            lVec.Add(world[x, yin]);
-        }
-
-        // X+ (right)
-        for (int x = xin + 1; x < xLen; x++)
-        {
-            rVec.Add(world[x, yin]);
-        }
-
-        if (uVec.All(f => f < treeHeight) ||
-            dVec.All(f => f < treeHeight) ||
-            lVec.All(f => f < treeHeight) ||
-            rVec.All(f => f < treeHeight))
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
+        Console.Write(Environment.NewLine);
     }
 }

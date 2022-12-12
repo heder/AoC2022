@@ -1,150 +1,161 @@
-﻿using System.Collections;
-using System.Numerics;
-
-class Program
+﻿class Program
 {
-
-    //static long debugVal;
-
-    static Dictionary<long, Monkey> monkeys = new Dictionary<long, Monkey>();
+    static int yMax;
+    static int xMax;
+    static Cell[,] world;
 
     static void Main()
     {
         string[] lines = File.ReadAllLines("in.txt").ToArray();
 
-        long i = 0;
-        while (i < lines.Length)
+        yMax = lines.Length;
+        xMax = lines[0].Length;
+        world = new Cell[xMax, yMax];
+
+        for (int y = 0; y < yMax; y++)
         {
-
-            Monkey m = new Monkey();
-
-            long monkey = Convert.ToInt32(lines[i].Split(" ")[1].Trim(':'));
-            i++;
-            var items = lines[i].Split(":")[1].Split(",").Select(f => long.Parse(f)).ToList();
-            i++;
-            var operation = lines[i].Split(":")[1].Split("=")[1].Trim().Split(" ");
-            i++;
-            var test = Convert.ToInt32(lines[i].Split(":")[1].Trim().Split(" ")[2]);
-            i++;
-            var trueDest = Convert.ToInt32(lines[i].Split(':')[1].Trim().Split(" ")[3]);
-            i++;
-            var falseDest = Convert.ToInt32(lines[i].Split(':')[1].Trim().Split(" ")[3]);
-            i++;
-            i++;
-
-            m.Items = items;
-            m.Operation = operation[1];
-            m.OperandA = operation[0];
-            m.OperandB = operation[2];
-            m.DivisibleBy = test;
-            m.DestinationIfTrue = trueDest;
-            m.DestinationIfFalse = falseDest;
-
-            monkeys.Add(monkey, m);
+            for (int x = 0; x < xMax; x++)
+            {
+                world[x, y] = new Cell(lines[y][x], x, y);
+            }
         }
 
-        var d = monkeys.Values.Aggregate(1, (c, m) => c * (int)m.DivisibleBy);
+        var start = world.Cast<Cell>().Where(f => f.Height == 'S').Single();
+        start.Height = 'a';
 
-        for (long x = 1; x <= 10000; x++)
+        List<int> lengths= new List<int>();
+        int i = 0;
+
+        var startingPositions = world.Cast<Cell>().Where(f => f.Height == 'a').ToList();
+        foreach (var item in startingPositions)
         {
-            foreach (var m in monkeys)
-            {
-                var monkey = m.Value;
-
-                // Inspect and increase worry level
-                monkey.Inspections += monkey.Items.Count();
-                var newList = new List<long>();
-                foreach (var item in monkey.Items)
-                {
-                    long b;
-
-                    if (monkey.OperandB == "old")
-                        b = item;
-                    else
-                        b = Convert.ToInt32(monkey.OperandB);
-
-                    long newVal = 0;
-                    switch (monkey.Operation)
-                    {
-                        case "+":
-                            newVal = item + b;
-                            break;
-
-                        case "*":
-                            newVal = item * b;
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                    // Divide worry level
-                    //newVal = newVal /= 3;
-                    newVal %= d;
-
-                    if (newVal % monkey.DivisibleBy == 0)
-                    {
-                        monkeys[monkey.DestinationIfTrue].Items.Add(newVal);
-                    }
-                    else
-                    {
-                        monkeys[monkey.DestinationIfFalse].Items.Add(newVal);
-                    }
-                }
-                monkey.Items.Clear();
-
-
-
-            }
-
-            Console.WriteLine(x);
-            if (x % 100 == 0)
-            {
-                DumpInspections(x);
-            }
-            //DumpMonkeys();
+            ResetWorld();
+            item.Distance = 0;
+            TraverseWorld(item);
+            var e = world.Cast<Cell>().Where(f => f.Height == 'E').Single();
+            lengths.Add(e.Distance);
+            Console.WriteLine(i);
+            i++;
         }
 
-        var top2 = monkeys.Values.OrderByDescending(f => f.Inspections).Take(2).ToArray();
-
-
-        Console.WriteLine(top2[0].Inspections * top2[1].Inspections);
+        Console.WriteLine(lengths.Min());
         Console.ReadKey();
     }
 
-    private static void DumpInspections(long x)
+    private static void TraverseWorld(Cell c)
     {
-        Console.WriteLine($"---------");
-        Console.WriteLine($"Round {x}");
-        foreach (var item in monkeys)
+        //DumpWorld(0, xMax, 0, yMax);
+
+        if (c.Height == 'E')
         {
-            Console.WriteLine($"{item.Key}: {item.Value.Inspections}");
+            return;
+        }
+
+        var paths = GetPaths(c);
+        foreach (var item in paths)
+        {
+            item.Distance = c.Distance + 1;
+            TraverseWorld(item);
+        }
+
+        return;
+    }
+
+    internal static List<Cell> GetPaths(Cell c)
+    {
+        var positions = new List<Cell>();
+
+        if (c.Y > 0)
+        {
+            var u = world[c.X, c.Y - 1];
+
+            if (CheckDistanceAndHeight(c, u))
+            {
+                positions.Add(u);
+            }
+        }
+
+        if (c.Y < yMax - 1)
+        {
+            var d = world[c.X, c.Y + 1];
+
+            if (CheckDistanceAndHeight(c, d))
+            {
+                positions.Add(d);
+            }
+        }
+
+        if (c.X > 0)
+        {
+            var l = world[c.X - 1, c.Y];
+
+            if (CheckDistanceAndHeight(c, l))
+            {
+                positions.Add(l);
+            }
+        }
+
+        if (c.X < xMax - 1)
+        {
+            var r = world[c.X + 1, c.Y];
+
+            if (CheckDistanceAndHeight(c, r))
+            {
+                positions.Add(r);
+            }
+        }
+
+        return positions;
+    }
+
+    private static bool CheckDistanceAndHeight(Cell c, Cell d)
+    {
+        return c.Distance + 1 < d.Distance && ((d.Height <= c.Height + 1 && d.Height != 'E') || (c.Height == 'z' && d.Height == 'E') || (c.Height == 'S' && d.Height == 'a'));
+    }
+
+
+    private static void ResetWorld()
+    {
+        foreach (var item in world)
+        {
+            item.Height = item.OriginalHeight;
+            item.Distance = int.MaxValue;
         }
     }
 
-    private static void DumpMonkeys()
+    internal class Cell
     {
-        foreach (var item in monkeys)
+        public Cell(char height, int x, int y)
         {
-            Console.WriteLine($"{item.Key}: {string.Join(", ", item.Value.Items.Select(f => f.ToString()))}");
+            Height = height;
+            OriginalHeight = height;
+            Distance = int.MaxValue;
+            X = x;
+            Y = y;
         }
+
+        public int X;
+        public int Y;
+
+        public char Height;
+        public char OriginalHeight;
+
+        public int Distance;
     }
 
 
-
-    class Monkey
+    internal static void DumpWorld(int xmin, int xmax, int ymin, int ymax)
     {
-        public List<long> Items { get; set; }
+        for (int y = ymin; y < ymax; y++)
+        {
+            for (int x = xmin; x < xmax; x++)
+            {
+                Console.Write(world[x, y].Distance + " | ");
+            }
 
-        public string Operation { get; set; }
+            Console.Write(Environment.NewLine);
+        }
 
-        public long DivisibleBy { get; set; }
-
-        public long DestinationIfTrue { get; set; }
-        public long DestinationIfFalse { get; set; }
-        public string OperandA { get; internal set; }
-        public string OperandB { get; internal set; }
-
-        public long Inspections { get; set; }
+        Console.Write(Environment.NewLine);
     }
 }
