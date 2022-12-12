@@ -1,137 +1,100 @@
-﻿using System.Collections;
-
-class Program
+﻿class Program
 {
-
-    //static int debugVal;
-
-    static Dictionary<int, Monkey> monkeys = new Dictionary<int, Monkey>();
+    static int yLen;
+    static int xLen;
+    static Cell[,] world;
 
     static void Main()
     {
         string[] lines = File.ReadAllLines("in.txt").ToArray();
 
-        int i = 0;
-        while (i < lines.Length)
+        yLen = lines.Length;
+        xLen = lines[0].Length;
+
+        world = new Cell[xLen, yLen];
+        //int noVisible = (lines.Length * 2) + ((lines[0].Length - 2) * 2);
+
+        for (int y = 0; y < yLen; y++)
         {
-
-            Monkey m = new Monkey();
-
-            int monkey = Convert.ToInt32(lines[i].Split(" ")[1].Trim(':'));
-            i++;
-            var items = lines[i].Split(":")[1].Split(",").Select(f => int.Parse(f)).ToList();
-            i++;
-            var operation = lines[i].Split(":")[1].Split("=")[1].Trim().Split(" ");
-            i++;
-            var test = Convert.ToInt32(lines[i].Split(":")[1].Trim().Split(" ")[2]);
-            i++;
-            var trueDest = Convert.ToInt32(lines[i].Split(':')[1].Trim().Split(" ")[3]);
-            i++;
-            var falseDest = Convert.ToInt32(lines[i].Split(':')[1].Trim().Split(" ")[3]);
-            i++;
-            i++;
-
-            m.Items = items;
-            m.Operation = operation[1];
-            m.OperandA = operation[0];
-            m.OperandB = operation[2];
-            m.DivisibleBy = test;
-            m.DestinationIfTrue = trueDest;
-            m.DestinationIfFalse = falseDest;
-
-            monkeys.Add(monkey, m);
-        }
-
-
-
-        for (int x = 0; x < 20; x++)
-        {
-            foreach (var m in monkeys)
+            for (int x = 0; x < xLen; x++)
             {
-                var monkey = m.Value;
-
-                // Inspect and increase worry level
-                monkey.Inspections += monkey.Items.Count();
-                var newList = new List<int>();
-                foreach (var item in monkey.Items)
-                {
-                    int b;
-
-                    if (monkey.OperandB == "old")
-                        b = item;
-                    else
-                        b = Convert.ToInt32(monkey.OperandB);
-
-                    int newVal = 0;
-                    switch (monkey.Operation)
-                    {
-                        case "+":
-                            newVal = item + b;
-                            break;
-
-                        case "*":
-                            newVal = item * b;
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                    // Divide worry level
-                    newVal = newVal /= 3;
-
-                    if (newVal % monkey.DivisibleBy == 0)
-                    {
-                        monkeys[monkey.DestinationIfTrue].Items.Add(newVal);
-                    }
-                    else
-                    {
-                        monkeys[monkey.DestinationIfFalse].Items.Add(newVal);
-                    }
-
-                  
-
-                }
-                monkey.Items.Clear();
-
-
-
+                world[x, y] = new Cell(lines[y][x]);  //Convert.ToInt32(lines[y][x].ToString());
             }
-
-            
-            DumpMonkeys();
         }
 
-        var top2 = monkeys.Values.OrderByDescending(f => f.Inspections).Take(2).ToArray();
 
 
-        Console.WriteLine(top2[0].Inspections * top2[1].Inspections);
+
+        //for (int y = 1; y < yLen - 1; y++)
+        //{
+        //    for (int x = 1; x < xLen - 1; x++)
+        //    {
+        //        noVisible += IsVisible(x, y);
+        //    }
+        //}
+
+        Console.WriteLine(noVisible);
         Console.ReadKey();
     }
 
-    private static void DumpMonkeys()
+
+    internal class Cell
     {
-        foreach (var item in monkeys)
+        public Cell(char height)
         {
-            Console.WriteLine($"{item.Key}: {string.Join(", ",  item.Value.Items.Select(f => f.ToString()))}");
+            Height = height;
+            Distance = 0;
+        }
+
+        public char Height;
+        public int Distance;
+    }
+
+
+
+    private static int IsVisible(int xin, int yin)
+    {
+        int treeHeight = world[xin, yin];
+
+        var uVec = new List<int>();
+        var dVec = new List<int>();
+        var lVec = new List<int>();
+        var rVec = new List<int>();
+
+        // (Y-) (up)
+        for (int y = yin - 1; y >= 0; y--)
+        {
+            uVec.Add(world[xin, y]);
+        }
+
+        // Y+ (down)
+        for (int y = yin + 1; y < yLen; y++)
+        {
+            dVec.Add(world[xin, y]);
+        }
+
+        // X- (left)
+        for (int x = xin - 1; x >= 0; x--)
+        {
+            lVec.Add(world[x, yin]);
+        }
+
+        // X+ (right)
+        for (int x = xin + 1; x < xLen; x++)
+        {
+            rVec.Add(world[x, yin]);
+        }
+
+        if (uVec.All(f => f < treeHeight) ||
+            dVec.All(f => f < treeHeight) ||
+            lVec.All(f => f < treeHeight) ||
+            rVec.All(f => f < treeHeight))
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
         }
     }
-
-    class Monkey
-{
-    public List<int> Items { get; set; }
-
-    public string Operation { get; set; }
-
-    public int DivisibleBy { get; set; }
-
-    public int DestinationIfTrue { get; set; }
-    public int DestinationIfFalse { get; set; }
-    public string OperandA { get; internal set; }
-    public string OperandB { get; internal set; }
-
-        public int Inspections { get; set; }
-    }
-
-
 }
