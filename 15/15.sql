@@ -52,7 +52,7 @@ select geometry::STLineFromText('LINESTRING(-2000000 2000000, 5200000 2000000)',
 	.STLength()
 from
 (
-	select geometry::UnionAggregate(c).ToString() d from
+	select geometry::UnionAggregate(c) d from
 	(
 		select geometry::ConvexHullAggregate(a) c from
 		(
