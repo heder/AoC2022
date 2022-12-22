@@ -126,7 +126,6 @@ class Program
             Calc(r);
             if (r.val1.result == r.val2.result)
             {
-                Console.WriteLine(i);
                 Console.ReadKey();
             }
 
