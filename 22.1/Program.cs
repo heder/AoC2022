@@ -1,28 +1,28 @@
-﻿
-internal class Cell
+﻿internal class Cell
 {
     public Cell(char type, int x, int y)
     {
-        Type = type;
-        //OriginalHeight = height;
-        //Distance = int.MaxValue;
+        T = type;
+        P = T;
         X = x;
         Y = y;
     }
 
+    public int side;
+
     public int X;
     public int Y;
 
-    public char Type;
-    //public char OriginalHeight;
-
-    //public int Distance;
+    public char T;
+    public char P;
 }
 
 
 
 class Program
 {
+    static bool dump = false;
+
     class Pos
     {
         public int x = 0;
@@ -34,7 +34,7 @@ class Program
     static Cell[,] world;
 
     static Pos currentPos = new Pos();
-    static char currentHeading = 'R';
+    static int currentHeading = 0;
 
     static void Main()
     {
@@ -43,9 +43,10 @@ class Program
         int i = 0;
         foreach (var item in lines)
         {
-            if (item[0] == ' ')
+            if (item.All(f => f == ' '))
             {
-                yMax = i; break;
+                yMax = i;
+                break;
             }
 
             i++;
@@ -53,155 +54,260 @@ class Program
 
         string travelPath = lines[i + 1];
 
-        xMax = lines[0].Length;
+        xMax = lines.Max(f => f.Length);
         world = new Cell[xMax, yMax];
 
         for (int y = 0; y < yMax; y++)
         {
             for (int x = 0; x < xMax; x++)
             {
-                world[x, y] = new Cell(lines[y][x], x, y);
+                if (x < lines[y].Length)
+                    world[x, y] = new Cell(lines[y][x], x, y);
+                else
+                    world[x, y] = new Cell(' ', x, y);
             }
         }
 
+
+        for (int y = 0; y < 50; y++)
+        {
+            for (int x = 50; x < 99; x++)
+            {
+                world[x, y].side = 1;
+            }
+
+            for (int x = 100; x < 150; x++)
+            {
+                world[x, y].side = 2;
+            }
+        }
+
+        for (int y = 50; y < 100; y++)
+        {
+            for (int x = 50; x < 100; x++)
+            {
+                world[x, y].side = 3;
+            }
+        }
+
+        for (int y = 100; y < 150; y++)
+        {
+            for (int x = 0; x < 50; x++)
+            {
+                world[x, y].side = 4;
+            }
+
+            for (int x = 50; x < 100; x++)
+            {
+                world[x, y].side = 5;
+            }
+        }
+
+        for (int y = 150; y < 200; y++)
+        {
+            for (int x = 0; x < 50; x++)
+            {
+                world[x, y].side = 6;
+            }
+        }
+
+
+
+        DumpWorld(0, xMax, 0, yMax);
 
         MoveToFirstValidPos();
 
-        char rotation;
-        int steps;
+        char rotation = 'R';
+        int steps = 0;
 
         int cPos = 0;
+        int rPos = 0;
         while (true)
         {
-            int x = cPos + 1;
-
-            if (travelPath[x] == 'L' || travelPath[x] == 'R' || travelPath[x] == 'U' || travelPath[x] == 'D'))
+            while (true)
             {
-                steps = Convert.ToInt32(travelPath[cPos..x]);
-                rotation = travelPath[x];
+                if (rPos == travelPath.Length || travelPath[rPos] == 'L' || travelPath[rPos] == 'R' || travelPath[rPos] == 'U' || travelPath[rPos] == 'D')
+                {
+                    steps = Convert.ToInt32(travelPath[cPos..rPos]);
+
+                    Move(steps);
+
+                    if (rPos == travelPath.Length)
+                    {
+                        int c = (1000 * (currentPos.y + 1)) + (4 * (currentPos.x + 1)) + currentHeading;
+                        Console.WriteLine(c);
+                        Console.ReadKey();
+                    }
+
+                    rotation = travelPath[rPos];
+
+
+                    Rotate(rotation);
+
+                    rPos++;
+                    cPos = rPos;
+                    break;
+                }
+
+                rPos++;
+
             }
-
-
-            Move(steps);
-            Rotate(rotation);
         }
 
-        //Console.WriteLine(lengths.Min());
-        Console.ReadKey();
+
     }
 
     private static void Move(int steps)
     {
-        switch (currentHeading)
+        for (int i = 0; i < steps; i++)
         {
-            case 'U':
-                if ()
+            switch (currentHeading)
+            {
 
-
-
+                case 0:
+                    currentPos.x = GetNextValidRight(currentPos.x, currentPos.y);
+                    world[currentPos.x, currentPos.y].P = '>';
+                    DumpWorld(0, xMax, 0, yMax);
                     break;
 
-            case 'D':
-                break;
+                case 1:
+                    currentPos.y = GetNextValidDown(currentPos.x, currentPos.y);
+                    world[currentPos.x, currentPos.y].P = 'v';
+                    DumpWorld(0, xMax, 0, yMax);
+                    break;
 
-            case 'L':
-                break;
+                case 2:
+                    currentPos.x = GetNextValidLeft(currentPos.x, currentPos.y);
+                    world[currentPos.x, currentPos.y].P = '<';
+                    DumpWorld(0, xMax, 0, yMax);
+                    break;
 
-            case 'R':
-                break;
-
+                case 3:
+                    currentPos.y = GetNextValidUp(currentPos.x, currentPos.y);
+                    world[currentPos.x, currentPos.y].P = '^';
+                    DumpWorld(0, xMax, 0, yMax);
+                    break;
+            }
         }
     }
 
 
 
-    int GetNextValidUp(int x, int y)
+    static int GetNextValidUp(int x, int y)
     {
-        if (y == 0 || world[x, y - 1].Type == ' ')
+        if (y == 0 || world[x, y - 1].T == ' ')
         {
-            // Find first valid non-' ' at bottom
+            int stay = y;
+
             while (true)
             {
-                if (world[x, y + 1].Type == ' ')
-                { 
-                    break; 
+                if (y == yMax - 1 || world[x, y + 1].T == ' ')
+                {
+                    break;
                 }
 
                 y++;
             }
+
+            if (world[x, y].T == '.')
+                return y;
+            else
+                return stay;
         }
         else
         {
-            y--;
+            if (world[x, y - 1].T == '.')
+                y--;
         }
 
         return y;
     }
 
-    int GetNextValidDown(int x, int y)
+    static int GetNextValidDown(int x, int y)
     {
-        if (y == 0 || world[x, y + 1].Type == ' ')
+        if (y == yMax - 1  || world[x, y + 1].T == ' ')
         {
-            // Find first valid non-' ' at bottom
+            int stay = y;
+
             while (true)
             {
-                if (world[x, y - 1].Type == ' ')
+                if (y == 0 || world[x, y - 1].T == ' ')
                 {
                     break;
                 }
 
                 y--;
             }
+
+            if (world[x, y].T == '.')
+                return y;
+            else
+                return stay;
         }
         else
         {
-            y++;
+            if (world[x, y + 1].T == '.')
+                y++;
         }
 
         return y;
     }
 
-    int GetNextValidLeft(int x, int y)
+    static int GetNextValidLeft(int x, int y)
     {
-        if (y == 0 || world[x - 1, y].Type == ' ')
+        if (x == 0 || world[x - 1, y].T == ' ')
         {
-            // Find first valid non-' ' at bottom
+            int stay = x;
+
             while (true)
             {
-                if (world[x - 1, y].Type == ' ')
+                if (x == xMax - 1 || world[x + 1, y].T == ' ')
                 {
                     break;
                 }
 
                 x++;
             }
+
+            if (world[x, y].T == '.')
+                return x;
+            else
+                return stay;
         }
         else
         {
-            x--;
+            if (world[x - 1, y].T == '.')
+                x--;
         }
 
         return x;
     }
 
-    int GetNextValidRight(int x, int y)
+    static int GetNextValidRight(int x, int y)
     {
-        if (y == 0 || world[x + 1, y].Type == ' ')
+        if (x == xMax -1  || world[x + 1, y].T == ' ')
         {
-            // Find first valid non-' ' at bottom
+            int stay = x;
+
             while (true)
             {
-                if (world[x + 1, y].Type == ' ')
+                if (x == 0 || world[x - 1, y].T == ' ')
                 {
                     break;
                 }
 
                 x--;
             }
+
+            if (world[x, y].T == '.')
+                return x;
+            else
+                return stay;
         }
         else
         {
-            x++;
+            if (world[x + 1, y].T == '.')
+                x++;
         }
 
         return x;
@@ -211,118 +317,62 @@ class Program
 
     private static void Rotate(char rotation)
     {
-        currentHeading = rotation;
+        if (rotation == 'R')
+        {
+            if (currentHeading == 3)
+            {
+                currentHeading = 0;
+            }
+            else
+            {
+                currentHeading++;
+            }
+        }
+
+        if (rotation == 'L')
+        {
+            if (currentHeading == 0)
+            {
+                currentHeading = 3;
+            }
+            else
+            {
+                currentHeading--;
+            }
+        }
     }
 
 
 
     static void MoveToFirstValidPos()
     {
-        while (world[currentPos.x, currentPos.y].Type == ' ')
+        while (world[currentPos.x, currentPos.y].T == ' ')
         {
             currentPos.x++;
         }
     }
 
 
+
+
+
+    internal static void DumpWorld(int xmin, int xmax, int ymin, int ymax)
+    {
+        if (dump == false) return;
+
+        for (int y = ymin; y < ymax; y++)
+        {
+            for (int x = xmin; x < xmax; x++)
+            {
+                Console.Write(world[x, y].P);
+            }
+
+            Console.Write(Environment.NewLine);
+        }
+
+        Console.Write(Environment.NewLine);
+    }
+
+
+
 }
-
-//    private static void TraverseWorld(Cell c)
-//    {
-//        //DumpWorld(0, xMax, 0, yMax);
-
-//        if (c.Height == 'E')
-//        {
-//            return;
-//        }
-
-//        var paths = GetPaths(c);
-//        foreach (var item in paths)
-//        {
-//            item.Distance = c.Distance + 1;
-//            TraverseWorld(item);
-//        }
-
-//        return;
-//    }
-
-//    internal static List<Cell> GetPaths(Cell c)
-//    {
-//        var positions = new List<Cell>();
-
-//        if (c.Y > 0)
-//        {
-//            var u = world[c.X, c.Y - 1];
-
-//            if (CheckDistanceAndHeight(c, u))
-//            {
-//                positions.Add(u);
-//            }
-//        }
-
-//        if (c.Y < yMax - 1)
-//        {
-//            var d = world[c.X, c.Y + 1];
-
-//            if (CheckDistanceAndHeight(c, d))
-//            {
-//                positions.Add(d);
-//            }
-//        }
-
-//        if (c.X > 0)
-//        {
-//            var l = world[c.X - 1, c.Y];
-
-//            if (CheckDistanceAndHeight(c, l))
-//            {
-//                positions.Add(l);
-//            }
-//        }
-
-//        if (c.X < xMax - 1)
-//        {
-//            var r = world[c.X + 1, c.Y];
-
-//            if (CheckDistanceAndHeight(c, r))
-//            {
-//                positions.Add(r);
-//            }
-//        }
-
-//        return positions;
-//    }
-
-//    //private static bool CheckDistanceAndHeight(Cell c, Cell d)
-//    //{
-//    //    return c.Distance + 1 < d.Distance && ((d.Height <= c.Height + 1 && d.Height != 'E') || (c.Height == 'z' && d.Height == 'E') || (c.Height == 'S' && d.Height == 'a'));
-//    //}
-
-
-//    //private static void ResetWorld()
-//    //{
-//    //    foreach (var item in world)
-//    //    {
-//    //        item.Height = item.OriginalHeight;
-//    //        item.Distance = int.MaxValue;
-//    //    }
-//    //}
-
-
-
-
-//    internal static void DumpWorld(int xmin, int xmax, int ymin, int ymax)
-//    {
-//        for (int y = ymin; y < ymax; y++)
-//        {
-//            for (int x = xmin; x < xmax; x++)
-//            {
-//                Console.Write(world[x, y]);
-//            }
-
-//            Console.Write(Environment.NewLine);
-//        }
-
-//        Console.Write(Environment.NewLine);
-//    }
-//}
