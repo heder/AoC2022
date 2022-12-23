@@ -18,8 +18,6 @@
     public char T;
 }
 
-
-
 class Program
 {
     static bool dump = true;
