@@ -81,8 +81,7 @@ class Program
             }
         }
 
-        DumpWorld(0, xMax, 0, yMax);
-
+        //DumpWorld(0, xMax, 0, yMax);
 
         List<int> distances = new List<int>();
         var moves = new Dictionary<int, List<Pos>>();
