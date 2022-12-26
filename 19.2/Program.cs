@@ -89,11 +89,13 @@ class Program
             });
 
 
-            for (int m = 0; m < 24; m++)
+            for (int m = 0; m < 32; m++)
             {
                 var states = minutes[m];
 
-                List<State> ml = new List<State>();
+                Console.WriteLine($"{DateTime.Now}: {bp}:{m}");
+
+                List <State> ml = new List<State>();
 
                 foreach (var s in states)
                 {
@@ -116,19 +118,19 @@ class Program
             }
 
             int max = 0;
-            var z = minutes[24];
+            var z = minutes[32];
             foreach (var x in z)
             {
                 if (x.geode > max) max = x.geode;
             }
 
-            Console.WriteLine($"{bp}: {max} -> QL: {bp * max}");
-            ql.Add(bp * max);
+            Console.WriteLine($"{DateTime.Now}: {bp}: {max}");
+            ql.Add(max);
             bp++;
 
         }
 
-        Console.WriteLine(ql.Sum());
+        Console.WriteLine(ql[0] * ql[1] * ql[2]);
         Console.ReadKey();
 
 
