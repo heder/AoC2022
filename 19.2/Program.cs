@@ -1,6 +1,4 @@
-﻿using System.Net.Quic;
-
-class State
+﻿class State
 {
     public int ore = 0;
     public int clay = 0;
@@ -95,7 +93,7 @@ class Program
 
                 Console.WriteLine($"{DateTime.Now}: {bp}:{m}");
 
-                List <State> ml = new List<State>();
+                List<State> ml = new List<State>();
 
                 foreach (var s in states)
                 {
@@ -104,17 +102,19 @@ class Program
                     foreach (var l in list)
                     {
                         l.Collect();
+                        ml.Add(l);
                     }
-
-                    ml.AddRange(list);
                 }
 
-                //minutes.Add(m + 1, ml);
+                // Extremt magiskt gissad siffra för att få rimlig culling-effekt:
+                // Deleta allt som laggar bakom geode max med 4 enheter...
+                int gm = ml.Max(f => f.geode);
+
+                if (gm > 4)
+                    ml = ml.Where(f => f.geode > gm - 4).ToList();
+
 
                 minutes.Add(m + 1, ml.DistinctBy(f => new { f.ore, f.clay, f.obsidian, f.geode, f.oreCollectors, f.clayCollectors, f.obsidianCollectors, f.geodeCollectors }).ToList());
-
-                //Console.WriteLine($"{minute} ore:{ore} ({oreCollectors}) clay:{clay} ({clayCollectors}) obsidian:{obsidian} ({obsidianCollectors}) geode:{geode} ({geodeCollectors})");
-                //Console.WriteLine($"GEODES: {geode}");
             }
 
             int max = 0;
@@ -124,16 +124,13 @@ class Program
                 if (x.geode > max) max = x.geode;
             }
 
-            Console.WriteLine($"{DateTime.Now}: {bp}: {max}");
+            Console.WriteLine($"{bp}: {max} -> QL: {bp * max}");
             ql.Add(max);
             bp++;
-
         }
 
         Console.WriteLine(ql[0] * ql[1] * ql[2]);
         Console.ReadKey();
-
-
     }
 
     private static List<State> GetNewStates(State s)

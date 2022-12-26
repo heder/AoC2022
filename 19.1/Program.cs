@@ -1,6 +1,4 @@
-﻿using System.Net.Quic;
-
-class State
+﻿class State
 {
     public int ore = 0;
     public int clay = 0;
@@ -111,8 +109,6 @@ class Program
 
                 minutes.Add(m + 1, ml.DistinctBy(f => new { f.ore, f.clay, f.obsidian, f.geode, f.oreCollectors, f.clayCollectors, f.obsidianCollectors, f.geodeCollectors }).ToList());
 
-                //Console.WriteLine($"{minute} ore:{ore} ({oreCollectors}) clay:{clay} ({clayCollectors}) obsidian:{obsidian} ({obsidianCollectors}) geode:{geode} ({geodeCollectors})");
-                //Console.WriteLine($"GEODES: {geode}");
             }
 
             int max = 0;
