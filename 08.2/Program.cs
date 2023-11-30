@@ -1,4 +1,4 @@
-﻿class Program
+﻿    class Program
 {
     static int yLen;
     static int xLen;
